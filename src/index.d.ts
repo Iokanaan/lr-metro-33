@@ -30,9 +30,10 @@ declare global {
     type PcSheet = {
         stats: Record<Stat, { "max": Signal<number>, "curr": Signal<number> }>,
         skills: Record<Skill, Signal<number>>,
-        stress: Signal<number>,
+        stress: { "detail": Signal<boolean>[], "total": Computed<number> },
         sangfroid: { "max": Signal<number>, "curr": Signal<number> },
         customRollModifier: Signal<number>
+        editMode: Signal<boolean>
     } & ExtendedSheet
 }
 

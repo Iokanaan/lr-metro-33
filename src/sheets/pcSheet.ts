@@ -1,15 +1,10 @@
 import { skills, stats } from "../globals"
-import { signal } from "../utils/utils"
+import { computed, signal } from "../utils/utils"
 
 const updateHandler = function<T>(signal: Signal<T>) {
     return function(c: Component<T>) {
+        log("Update " + c.value())
         signal.set(c.value())
-    }
-}
-
-const stringToIntegerUpdateHandler = function<T>(signal: Signal<number>) {
-    return function(c: Component<string>) {
-        signal.set(parseInt(c.value()))
     }
 }
 
@@ -19,6 +14,9 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     _sheet.raw = function() { return sheet }
     _sheet.find = sheet.get
     _sheet.entryStates = {}
+
+    // edit mode
+    _sheet.editMode = signal(false)
 
     // skills
     log("[INFO] Recording skills for : " + sheet.properName())
@@ -44,11 +42,26 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     }
 
     // stress
-    const stress_cmp = _sheet.find("stress_val") as Component<number>
-    _sheet.stress = signal(stress_cmp.value() as number)
-    stress_cmp.on("update", updateHandler(_sheet.stress))
+    const stressDetail = [] as Signal<boolean>[] 
 
-    // sangfroid
+    for(let i=1;i<=5;i++) {
+        const stress_cmp = _sheet.find("stress_" + i) as Component<boolean>
+        const sig = signal(stress_cmp.value())
+        stressDetail.push(sig)
+        stress_cmp.on("update", updateHandler(sig))
+    }
+    _sheet.stress = { 
+        "detail": stressDetail,
+        "total": computed(function() {
+            let total = 0
+            for(let i=0; i<stressDetail.length;i++) {
+                total += stressDetail[i]() ? 1 : 0
+            }
+            return total
+        }, stressDetail)
+    }
+
+ /*   // sangfroid
     const sangfroid_curr = _sheet.find("sangfroid_curr") as Component<number>
     const sangfroid_max = _sheet.find("sangfroid_max") as Component<number>
     if(sangfroid_max.value() === undefined) {
@@ -60,9 +73,9 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     }
     sangfroid_curr.on("update", updateHandler(_sheet.sangfroid.curr))
     sangfroid_max.on("update", updateHandler(_sheet.sangfroid.max))
-
+*/
     // custom roll modifier
-    const customRollModifier_cmp = _sheet.find("custom_roll_modifier") as Component<number>
+    const customRollModifier_cmp = _sheet.find("modif_val") as Component<number>
     _sheet.customRollModifier = signal(customRollModifier_cmp.value())
     customRollModifier_cmp.on("update", updateHandler(_sheet.customRollModifier))
 
