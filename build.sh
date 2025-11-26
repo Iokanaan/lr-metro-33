@@ -1,0 +1,1 @@
+npm run build; sed 's/void 0/undefined/g' ./dist/my-lib.js > ./dist/index.js
