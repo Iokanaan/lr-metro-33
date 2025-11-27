@@ -116,19 +116,88 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
         handleRadCheckbox(_sheet, i)
     }
 
+
+
+    const conso_eau_cmp = _sheet.find("conso_eau_val") as Component<number>
+    const conso_nourr_cmp = _sheet.find("conso_nourr_val") as Component<number>
+    const conso_energie_cmp = _sheet.find("conso_energie_val") as Component<number>
+    const conso_filtre_cmp = _sheet.find("conso_filtre_val") as Component<number>
+    if(conso_eau_cmp.value() === undefined) {
+        conso_eau_cmp.value(0)
+    }
+    if(conso_nourr_cmp.value() === undefined) {
+        conso_nourr_cmp.value(0)
+    }
+    if(conso_energie_cmp.value() === undefined) {
+        conso_energie_cmp.value(0)
+    }
+    if(conso_filtre_cmp.value() === undefined) {
+        conso_filtre_cmp.value(0)
+    }
+
+    _sheet.consommables = {
+        "eau": signal(conso_eau_cmp.value()),
+        "nourriture": signal(conso_nourr_cmp.value()),
+        "energie": signal(conso_energie_cmp.value()),
+        "filtre": signal(conso_filtre_cmp.value())
+    }
+    conso_eau_cmp.on("update", updateHandler(_sheet.consommables.eau))
+    conso_nourr_cmp.on("update", updateHandler(_sheet.consommables.nourriture))
+    conso_energie_cmp.on("update", updateHandler(_sheet.consommables.energie))
+    conso_filtre_cmp.on("update", updateHandler(_sheet.consommables.filtre))
+
+    // objets
+    const objets = _sheet.find("objets") as Component<Record<string, Item>>
+    if(objets.value() === undefined) {
+        objets.value({})
+    }
+    _sheet.objets = signal(objets.value())
+
+    // armes
+    const weapons = _sheet.find("weapons") as Component<Record<string, Weapon>>
+    if(weapons.value() === undefined) {
+        weapons.value({})
+    }
+    _sheet.armes = signal(weapons.value())
+
+    // protections
+    const protections = _sheet.find("protections") as Component<Record<string, Protection>>
+    if(protections.value() === undefined) {
+        protections.value()
+    }
+    _sheet.protections = signal(protections.value())
+
+    // talents
+    const talents = _sheet.find("talents") as Component<Record<string, Talent>>
+    if(talents.value() === undefined) {
+        talents.value({})
+    }
+    _sheet.talents = signal(talents.value())
+
     // encombrement
     _sheet.encombrement = computed(function() {
         return 0 // TODO
-    }, [])
+    }, [
+        _sheet.consommables.eau,
+        _sheet.consommables.nourriture,
+        _sheet.consommables.energie,
+        _sheet.consommables.filtre,
+        _sheet.objets,
+        _sheet.armes,
+        _sheet.protections
+    ])
     _sheet.max_encombrement = computed(function() {
         return 0 // TODO
-    }, [])
+    }, [
+        _sheet.stats.vig.max
+    ])
 
     // protection
     _sheet.protection_total = computed(function() {
         return 0 // TODO
-    }, [])
-
+    }, [
+        _sheet.protections
+    ])
 
     // custom roll modifier
     const customRollModifier_cmp = _sheet.find("modif_val") as Component<number>
