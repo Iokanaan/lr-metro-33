@@ -1,4 +1,5 @@
 import { skills, stats } from "../globals"
+import { handleRadCheckbox } from "../radiation/radiation"
 import { computed, signal } from "../utils/utils"
 
 const updateHandler = function<T>(signal: Signal<T>) {
@@ -17,6 +18,15 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
 
     // edit mode
     _sheet.editMode = signal(false)
+
+    // base info
+    const archetypeCmp = _sheet.find("arch_val") as Component<string>
+    _sheet.archetype = signal(archetypeCmp.value())
+    archetypeCmp.on("update", updateHandler<string>(_sheet.archetype))
+
+    const ageCmp = _sheet.find("age_val") as Component<number>
+    _sheet.age = signal(ageCmp.value())
+    ageCmp.on("update", updateHandler<number>(_sheet.age))
 
     // skills
     log("[INFO] Recording skills for : " + sheet.properName())
@@ -42,7 +52,7 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     }
 
     // stress
-    const stressDetail = [] as Signal<boolean>[] 
+    const stressDetail = [] as Signal<boolean>[]
 
     for(let i=1;i<=5;i++) {
         const stress_cmp = _sheet.find("stress_" + i) as Component<boolean>
@@ -50,7 +60,7 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
         stressDetail.push(sig)
         stress_cmp.on("update", updateHandler(sig))
     }
-    _sheet.stress = { 
+    _sheet.stress = {
         "detail": stressDetail,
         "total": computed(function() {
             let total = 0
@@ -74,6 +84,52 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     sangfroid_curr.on("update", updateHandler(_sheet.sangfroid.curr))
     sangfroid_max.on("update", updateHandler(_sheet.sangfroid.max))
 */
+
+    const tempRadDetail = [] as Signal<boolean>[]
+    const perm_rad_cmp = _sheet.find("rad_perm_val") as Component<number>
+    if(perm_rad_cmp.value() === undefined) {
+        perm_rad_cmp.value(0)
+    }
+    const perm_rad = signal(perm_rad_cmp.value())
+
+    for(let i=1;i<=10;i++) {
+        const temp_rad_cmp = _sheet.find("rad_" + i) as Component<boolean>
+        const sig = signal(temp_rad_cmp.value())
+        tempRadDetail.push(sig)
+    }
+    _sheet.radiation = {
+        "temp": {
+            "detail": tempRadDetail,
+            "total": computed(function() {
+                let total = 0
+                for(let i=0; i<tempRadDetail.length;i++) {
+                    total += tempRadDetail[i]() ? 1 : 0
+                }
+                return total
+            }, tempRadDetail)
+        },
+        "perm": perm_rad
+    }
+    perm_rad_cmp.on("update", updateHandler(_sheet.radiation.perm))
+
+    for(let i=1;i<=10;i++) {
+        handleRadCheckbox(_sheet, i)
+    }
+
+    // encombrement
+    _sheet.encombrement = computed(function() {
+        return 0 // TODO
+    }, [])
+    _sheet.max_encombrement = computed(function() {
+        return 0 // TODO
+    }, [])
+
+    // protection
+    _sheet.protection_total = computed(function() {
+        return 0 // TODO
+    }, [])
+
+
     // custom roll modifier
     const customRollModifier_cmp = _sheet.find("modif_val") as Component<number>
     _sheet.customRollModifier = signal(customRollModifier_cmp.value())

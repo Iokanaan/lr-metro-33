@@ -9,16 +9,16 @@ export const setupStats = function(sheet: PcSheet) {
     sheet.find("edit_stats").on("click", function(cmp) {
         sheet.editMode.set(true)
         cmp.hide()
-        sheet.find("close_edit_stats").show()    
+        sheet.find("close_edit_stats").show()
     })
 
     sheet.find("close_edit_stats").on("click", function(cmp) {
         sheet.editMode.set(false)
         cmp.hide()
-        sheet.find("edit_stats").show()    
+        sheet.find("edit_stats").show()
     })
 
-        
+
     for(let i=0; i<stats.length; i++) {
         setupStat(sheet, stats[i])
     }
@@ -40,6 +40,35 @@ const setupSkill = function(sheet: PcSheet, skill: Skill) {
 
         sheet.find("modif_val").value(0)
     })
+}
+
+export const setupBaseInfo = function(sheet: PcSheet) {
+    const archetypeValCmp = sheet.find("arch_val") as Component<string>
+    const archetypeLabelCmp = sheet.find("arch_label") as Component<string>
+    const ageValCmp = sheet.find("age_val") as Component<string>
+    const ageLabelCmp = sheet.find("age_label") as Component<string>
+
+    effect(function() {
+        if(sheet.editMode()) {
+            archetypeValCmp.show()
+            archetypeLabelCmp.hide()
+            ageValCmp.show()
+            ageLabelCmp.hide()
+        } else {
+            archetypeValCmp.hide()
+            archetypeLabelCmp.show()
+            ageValCmp.hide()
+            ageLabelCmp.show()
+        }
+    }, [sheet.editMode])
+
+    effect(function() {
+        archetypeLabelCmp.text(Tables.get("roles").get(sheet.archetype()).name)
+    }, [sheet.archetype])
+
+    effect(function() {
+        ageLabelCmp.text(sheet.age().toString())
+    }, [sheet.age])
 }
 
 
@@ -103,4 +132,16 @@ const setupStat = function(sheet: PcSheet, stat: Stat) {
 
         sheet.find("modif_val").value(0)
     })
+}
+
+export const setupEncombrement = function(sheet: PcSheet) {
+    effect(function() {
+        sheet.find("enc_txt").value(sheet.encombrement() + " / " + sheet.max_encombrement())
+    }, [sheet.encombrement, sheet.max_encombrement])
+}
+
+export const setupProtection = function(sheet: PcSheet) {
+    effect(function() {
+        sheet.find("prot_txt").value(sheet.protection_total())
+    }, [sheet.protection_total])
 }

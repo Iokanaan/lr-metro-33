@@ -28,12 +28,18 @@ declare global {
     type Skill = 'furti' | 'rea' | 'tir' | 'brico' | 'cac' | 'endu' | 'ana' | 'mani' | 'soin' | 'com' | 'obs' | 'survie'
 
     type PcSheet = {
+        age: Signal<number>,
+        archetype: Signal<string>,
         stats: Record<Stat, { "max": Signal<number>, "curr": Signal<number> }>,
         skills: Record<Skill, Signal<number>>,
         stress: { "detail": Signal<boolean>[], "total": Computed<number> },
         sangfroid: { "max": Signal<number>, "curr": Signal<number> },
+        radiation: { "temp": { "detail": Signal<boolean>[], "total": Computed<number> }, "perm": Signal<number> },
         customRollModifier: Signal<number>
-        editMode: Signal<boolean>
+        editMode: Signal<boolean>,
+        protection_total: Computed<number>,
+        encombrement: Computed<number>
+        max_encombrement: Computed<number>
     } & ExtendedSheet
 }
 

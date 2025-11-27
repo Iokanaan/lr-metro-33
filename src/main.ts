@@ -1,8 +1,8 @@
 import { globalSheets } from "./globals"
 import { pcSheet } from "./sheets/pcSheet"
 import { setupNav } from "./nav/nav"
-import { setupStats } from "./skills/skills"
-import { setupStressArray } from "./state/state"
+import { setupBaseInfo, setupEncombrement, setupProtection, setupStats } from "./skills/skills"
+import { setupRadiation } from "./radiation/radiation"
 
 init = function(sheet: Sheet) {
     if(sheet.id() === "main") {
@@ -16,7 +16,10 @@ init = function(sheet: Sheet) {
         try {
             s.find("char_name").value(sheet.properName())
             setupStats(s)
-            setupStressArray(s)
+            setupBaseInfo(s)
+            setupRadiation(s)
+            setupProtection(s)
+            setupEncombrement(s)
         } catch(e) {
             log("[ERROR]: Failed setting stats / AR for " + sheet.getSheetId())
         }
