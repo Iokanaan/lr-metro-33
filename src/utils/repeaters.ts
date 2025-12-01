@@ -3,7 +3,7 @@
  *  - setupEditEntry pour le script qui concerne l'entrée en mode édition
  *  - setupViewEntry pour le script qui concerne l'entrée en mode affichage
  *  - onDelete pour déclencher un script à la suppression d'un élément
- * 
+ *
  * En prérequis à l'utilisation de la fonction, il est nécessaire d'avoir :
  *  - un composant "label" avec l'id "mode" et contenant "VIEW" sur le sous-composant servant à l'affichage
  *  - un composant "label" avec l'id "mode" et contenant "EDIT" sur le sous-composant servant à l'édition
@@ -47,7 +47,7 @@ export const setupRepeater = function(
 }
 
 // À appeler quand on réinitialise toutes les données d'un repeater ou au dépôt d'un craft
-export const reset = function(sheet: PcSheet, repeaterId: string,     
+export const reset = function(sheet: PcSheet, repeaterId: string,
     setupEditEntry: ((entry: Component<any>) => void) | null,
     setupViewEntry: ((entry: Component<any>) => void) | null
     ) {
@@ -59,8 +59,8 @@ export const reset = function(sheet: PcSheet, repeaterId: string,
 }
 
 const reviewEntries = function(
-    rep: Component<Record<string, unknown>>, 
-    entryStates: Record<string, RepeaterState | undefined>, 
+    rep: Component<Record<string, unknown>>,
+    entryStates: Record<string, RepeaterState | undefined>,
     setupEditEntry: ((entry: Component<any>) => void) | null,
     setupViewEntry: ((entry: Component<any>) => void) | null) {
     each(rep.value(), function (_, entryId) {
@@ -74,6 +74,7 @@ const reviewEntries = function(
             // L'entry est stockée en mode EDIT
             entryStates[entryId] = 'EDIT'
         } else {
+            log("[INFO] Setting up VIEW entry : " + rep.sheet().properName() + "." + rep.id() + "." + entryId)
             if(entryStates[entryId] !== 'VIEW' && setupViewEntry !== null) {
                 // Initialisation de l'entry
                 setupViewEntry(entry)

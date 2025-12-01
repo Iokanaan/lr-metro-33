@@ -60,6 +60,18 @@ export const onProtectionDisplay = function(entry: Component<Protection>) {
     if(curr_armor.curr_protection_bonus === undefined || curr_armor.curr_protection_bonus > curr_armor.max_protection_bonus) {
         curr.value(curr_armor.max_protection_bonus)
     }
+
+    if(curr_armor.protection_name !== undefined) {
+        entry.find("protection_label").value(curr_armor.protection_name);
+    } else {
+        entry.find("protection_label").value("Protection inconnue");
+    }
+
+    if(curr_armor.protection_poids === undefined || curr_armor.protection_poids === "0") {
+        entry.find("protection_poids_label").value("0")
+    } else {
+        entry.find("protection_poids_label").value(Tables.get("poids").get(curr_armor.protection_poids).name)
+    }
 }
 
 export const onProtectionDelete = function(sheet: PcSheet) {

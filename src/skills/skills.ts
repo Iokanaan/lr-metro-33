@@ -38,6 +38,7 @@ const setupSkill = function(sheet: PcSheet, skill: Skill) {
             .expression(buildRoll(sheet.stats[skillStat].curr() + sheet.skills[skill]() + sheet.customRollModifier(), sheet.stress.total(), false))
             .onRoll(stressSuccessHandler(sheet))
             .addAction("Forcer", forceRollHandler(sheet, skillCmp.text()))
+            .visibility(sheet.find("roll_visibility").value())
             .roll()
 
         sheet.find("modif_val").value(0)
@@ -167,4 +168,16 @@ export const setupProtection = function(sheet: PcSheet) {
     effect(function() {
         sheet.find("prot_txt").value(sheet.protection_total())
     }, [sheet.protection_total])
+}
+
+export const setupProtectionRoll = function(sheet: PcSheet) {
+    const protCmp = sheet.find("prot_label") as Component<string>
+
+    protCmp.on("click", function(cmp) {
+        new RollBuilder(sheet.raw())
+            .title(cmp.text())
+            .expression("(" + sheet.protection_total() + "d6)[prot]")
+            .visibility(sheet.find("roll_visibility").value())
+            .roll()
+    })
 }

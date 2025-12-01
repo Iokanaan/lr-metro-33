@@ -1,4 +1,5 @@
 import { globalSheets } from "../globals"
+import { buildRoll, forceRollHandler, stressSuccessHandler } from "../roll/roll"
 import { basicUpdateHandler, effect, signal } from "../utils/utils"
 
 export const onWeaponEdit = function(entry: Component<Weapon>) {
@@ -28,7 +29,7 @@ export const onWeaponEdit = function(entry: Component<Weapon>) {
     }, [sig_weapon_type_val])
 }
 
-export const onWeaponDisplay = function(entry: Component<Weapon>) {)
+export const onWeaponDisplay = function(entry: Component<Weapon>) {
     const sheet = globalSheets[entry.sheet().getSheetId()] as PcSheet
     let weapons = sheet.weapons()
     const curr_weapon = entry.value()
@@ -107,8 +108,8 @@ export const onWeaponDisplay = function(entry: Component<Weapon>) {)
         }
         entry.find("weapon_prise_label").value(Tables.get("prises").get(entry.find("curr_prise_val").value()).name)
     })
-    
-    log("ste 00")
+
+
     if(curr_weapon.weapon_name_val === undefined) {
         curr_weapon.weapon_name_val = ""
     }
@@ -124,12 +125,32 @@ export const onWeaponDisplay = function(entry: Component<Weapon>) {)
     if(curr_weapon.weapon_curr_bonus === undefined || curr_weapon.weapon_curr_bonus > curr_weapon.weapon_bonus_val) {
         curr.value(curr_weapon.weapon_bonus_val)
     }
+
+    entry.find("weapon_label").on("click", function() {
+        let skill = (sheet.find("cac_val") as Component<number>).value() + (sheet.find("vig_val") as Component<number>).value()
+
+        if(curr_weapon.weapon_type_val !== "cac") {
+            skill = (sheet.find("tir_val") as Component<number>).value() + (sheet.find("agi_val") as Component<number>).value()
+        }
+        const roll_expression = buildRoll(
+            skill + curr_weapon.weapon_curr_bonus,
+            sheet.stress.total(),
+            false
+        )
+        new RollBuilder(sheet.raw())
+            .title(curr_weapon.weapon_name_val)
+            .expression(roll_expression)
+            .visibility(sheet.find("roll_visibility").value())
+            .onRoll(stressSuccessHandler(sheet))
+            .addAction("Forcer", forceRollHandler(sheet, curr_weapon.weapon_name_val))
+            .roll()
+    })
 }
 
 export const onWeaponDelete = function(sheet: PcSheet) {
     return function(entryId: string) {
         const weapons = sheet.weapons()
         delete weapons[entryId]
-        sheet.weapons.set(weapons) 
+        sheet.weapons.set(weapons)
     }
 }

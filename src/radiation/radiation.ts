@@ -48,6 +48,7 @@ export const handleRadCheckbox = function(_sheet: PcSheet, i: number) {
                 new RollBuilder(_sheet.raw())
                     .title("Détoxification")
                     .expression("(1d6 > 1)[rad,detox]")
+                    .visibility(_sheet.find("roll_visibility").value())
                     .onRoll(function (roll: DiceResult) {
                         if(roll.total === 0 && _sheet.radiation.perm() < 10) {
                             _sheet.find("rad_perm_val").value(_sheet.radiation.perm() + 1)
@@ -59,6 +60,7 @@ export const handleRadCheckbox = function(_sheet: PcSheet, i: number) {
                 new RollBuilder(_sheet.raw())
                     .title("Exposition aux radiations")
                     .expression("(" + _sheet.radiation.temp.total() + "d6 > 1)[rad]")
+                    .visibility(_sheet.find("roll_visibility").value())
                     .roll()
             } else {
                 _sheet.radiation.temp.detail[i-1].set(cmp.value())

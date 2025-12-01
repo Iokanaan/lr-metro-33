@@ -1,13 +1,13 @@
 import { globalSheets } from "./globals"
 import { pcSheet } from "./sheets/pcSheet"
 import { setupNav } from "./nav/nav"
-import { setupBaseInfo, setupEncombrement, setupProtection, setupStats } from "./skills/skills"
+import { setupBaseInfo, setupEncombrement, setupProtection, setupProtectionRoll, setupStats } from "./skills/skills"
 import { setupRadiation } from "./radiation/radiation"
 import { setupRepeater } from "./utils/repeaters"
 import { onProtectionDelete, onProtectionDisplay, onProtectionEdit } from "./gear/protection"
 import { onItemDelete, onItemDisplay, onItemEdit } from "./gear/item"
 import { onWeaponDelete, onWeaponDisplay, onWeaponEdit } from "./gear/weapons"
-import { buildRoll, standardCallback } from "./roll/roll"
+import { buildRoll, protectionCallback, radiationCallback, standardCallback } from "./roll/roll"
 
 init = function(sheet: Sheet) {
     if(sheet.id() === "main") {
@@ -43,36 +43,16 @@ init = function(sheet: Sheet) {
         } catch(e) {
             log("[ERROR]: Failed setting up weapons repeater for " + sheet.getSheetId())
         }
+        setupProtectionRoll(s)
     }
 }
 
 initRoll = function (result, callback) {
     if(result.allTags.includes("rad")) {
-        callback("RollRadDisplay", function (sheet: Sheet) {
-            if(result.allTags.includes("detox")) {
-                if(result.children[0].total < 1) {
-                    sheet.get("success").hide()
-                    sheet.get("failure").show()
-                    sheet.get("nb_failures").hide()
-                } else {
-                    sheet.get("success").show()
-                    sheet.get("failure").hide()
-                    sheet.get("nb_failures").hide()
-                }
-            } else {
-                if(result.children[0].failure >= 1) {
-                    sheet.get("success").hide()
-                    sheet.get("failure").show()
-                    sheet.get("nb_failures").value(result.children[0].failure)
-                    sheet.get("nb_failures").show()
-                } else {
-                    sheet.get("success").show()
-                    sheet.get("failure").hide()
-                    sheet.get("nb_failures").hide()
-                }
-            }
-        })
+        callback("RollRadDisplay", radiationCallback(result))
+    } else if(result.allTags.includes("prot")) {
+        callback("RollProtDisplay", protectionCallback(result))
     } else {
-        callback("RollDisplay", standardCallback(result))
+        callback("RollDisplay", standardCallback(result, result.allTags.includes("forced")))
     }
 };
