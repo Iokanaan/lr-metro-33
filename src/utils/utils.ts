@@ -90,3 +90,13 @@ export const lazySet = function<T>(cmp: Component<T>,value: T) {
         cmp.value(value)
     }
 }
+
+export const weightConverter = function(txt: string): number {
+    if(txt === "0_25") {
+        return 0.25
+    }
+    if(txt === "0_5") {
+        return 0.5
+    }
+    return parseInt(txt)
+}

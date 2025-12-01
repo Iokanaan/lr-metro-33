@@ -31,29 +31,44 @@ declare global {
     type Item = {
         name: string,
         quantity: number,
-        weight: number
+        weight: string
     }
 
     type Weapon = {
-        name: string,
-        damage: string,
-        type: string,
-        rof: string,
-        range: string,
-        ap: string,
-        special: string
+        weapon_name_val: string,
+        weapon_bonus_val: number,
+        weapon_degats_val: number,
+        weapon_type_val: string,
+        weapon_fiabilite_val: number,
+        weapon_portee_val: string,
+        weapon_prise_val: string,
+        weapon_explosif_val: boolean,
+        weapon_poids_val: string,
+        weapon_notes_val: string,
+        weapon_curr_bonus: number,
+        curr_prise_val: string
+    }
+
+    type DieResult = {
+        result: number
+        tags: string[]
     }
 
     type Protection = {
-        name: string,
-        ar: number,
-        location: string,
-        special: string
+        protection_name: string,
+        max_protection_bonus: number,
+        curr_protection_bonus: number,
+        protection_poids: string
     }
 
     type Talent = {
         name: string,
         level: number
+    }
+
+    type RollData = {
+        diceResult: DiceResult[]
+        diceTag: string[]
     }
 
     type PcSheet = {
@@ -69,8 +84,8 @@ declare global {
         protection_total: Computed<number>,
         encombrement: Computed<number>
         max_encombrement: Computed<number>,
-        objets: Signal<Record<string, Item>>,
-        armes: Signal<Record<string, Weapon>>,
+        items: Signal<Record<string, Item>>,
+        weapons: Signal<Record<string, Weapon>>,
         protections: Signal<Record<string, Protection>>,
         consommables: Record<Consommable, Signal<number>>,
         talents: Signal<Record<string, Talend>>

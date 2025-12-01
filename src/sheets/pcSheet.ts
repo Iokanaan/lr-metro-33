@@ -1,6 +1,6 @@
 import { skills, stats } from "../globals"
 import { handleRadCheckbox } from "../radiation/radiation"
-import { computed, signal } from "../utils/utils"
+import { computed, signal, weightConverter } from "../utils/utils"
 
 const updateHandler = function<T>(signal: Signal<T>) {
     return function(c: Component<T>) {
@@ -71,19 +71,6 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
         }, stressDetail)
     }
 
- /*   // sangfroid
-    const sangfroid_curr = _sheet.find("sangfroid_curr") as Component<number>
-    const sangfroid_max = _sheet.find("sangfroid_max") as Component<number>
-    if(sangfroid_max.value() === undefined) {
-        sangfroid_max.value(5)
-    }
-    _sheet.sangfroid = {
-        "max": signal(sangfroid_max.value()),
-        "curr": signal(sangfroid_curr.value())
-    }
-    sangfroid_curr.on("update", updateHandler(_sheet.sangfroid.curr))
-    sangfroid_max.on("update", updateHandler(_sheet.sangfroid.max))
-*/
 
     const tempRadDetail = [] as Signal<boolean>[]
     const perm_rad_cmp = _sheet.find("rad_perm_val") as Component<number>
@@ -147,18 +134,18 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     conso_filtre_cmp.on("update", updateHandler(_sheet.consommables.filtre))
 
     // objets
-    const objets = _sheet.find("objets") as Component<Record<string, Item>>
+    const objets = _sheet.find("objets_divers") as Component<Record<string, Item>>
     if(objets.value() === undefined) {
         objets.value({})
     }
-    _sheet.objets = signal(objets.value())
+    _sheet.items = signal(objets.value())
 
     // armes
     const weapons = _sheet.find("weapons") as Component<Record<string, Weapon>>
     if(weapons.value() === undefined) {
         weapons.value({})
     }
-    _sheet.armes = signal(weapons.value())
+    _sheet.weapons = signal(weapons.value())
 
     // protections
     const protections = _sheet.find("protections") as Component<Record<string, Protection>>
@@ -176,25 +163,74 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
 
     // encombrement
     _sheet.encombrement = computed(function() {
-        return 0 // TODO
+        let enc = 0
+        if(_sheet.consommables.eau() >= 7) {
+            enc+=3
+        } else if(_sheet.consommables.eau() >= 5) {
+            enc+=2
+        } else if(_sheet.consommables.eau() >= 1) {
+            enc+=1
+        }
+        if(_sheet.consommables.nourriture() >= 7) {
+            enc+=3
+        } else if(_sheet.consommables.nourriture() >= 5) {
+            enc+=2
+        } else if(_sheet.consommables.nourriture() >= 1) {
+            enc+=1
+        }
+        if(_sheet.consommables.filtre() >= 9) {
+            enc+=3
+        } else if(_sheet.consommables.filtre() >= 6) {
+            enc+=2
+        } else if(_sheet.consommables.filtre() >= 4) {
+            enc+=1
+        }
+        if(_sheet.consommables.energie() >= 9) {
+            enc+=3
+        } else if(_sheet.consommables.energie() >= 6) {
+            enc+=2
+        } else if(_sheet.consommables.energie() >= 4) {
+            enc+=1
+        }
+        const items = Object.values(_sheet.items()) as Item[]
+        for(let i=0; i<items.length; i++) {
+            enc += weightConverter(items[i].weight)
+        }
+        const weapons = Object.values(_sheet.weapons()) as Weapon[]
+        for(let i=0; i<weapons.length; i++) {
+            enc += weightConverter(weapons[i].weapon_poids_val)
+        }
+        const protections = Object.values(_sheet.protections()) as Protection[]
+        for(let i=0; i<protections.length; i++) {
+            enc += weightConverter(protections[i].protection_poids)
+        }
+        return enc // TODO
     }, [
         _sheet.consommables.eau,
         _sheet.consommables.nourriture,
         _sheet.consommables.energie,
         _sheet.consommables.filtre,
-        _sheet.objets,
-        _sheet.armes,
+        _sheet.items,
+        _sheet.weapons,
         _sheet.protections
     ])
     _sheet.max_encombrement = computed(function() {
-        return 0 // TODO
+        return _sheet.stats.vig.max() * 2
     }, [
         _sheet.stats.vig.max
     ])
 
     // protection
     _sheet.protection_total = computed(function() {
-        return 0 // TODO
+        if(_sheet.protections() === undefined) {
+            return 0
+        }
+        const values = Object.values(_sheet.protections())
+        let prot_total = 0
+        for(let i=0; i<values.length; i++) {
+            prot_total += values[i].curr_protection_bonus
+        }
+        return prot_total
     }, [
         _sheet.protections
     ])

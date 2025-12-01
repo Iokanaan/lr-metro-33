@@ -1,4 +1,4 @@
-import { buildRoll } from "../roll/roll"
+import { buildRoll, forceRollHandler, stressSuccessHandler } from "../roll/roll"
 import { skills, skillStatMap, stats } from "../globals"
 import { effect } from "../utils/utils"
 
@@ -36,6 +36,8 @@ const setupSkill = function(sheet: PcSheet, skill: Skill) {
         new RollBuilder(sheet.raw())
             .title(skillCmp.text())
             .expression(buildRoll(sheet.stats[skillStat].curr() + sheet.skills[skill]() + sheet.customRollModifier(), sheet.stress.total(), false))
+            .onRoll(stressSuccessHandler(sheet))
+            .addAction("Forcer", forceRollHandler(sheet, skillCmp.text()))
             .roll()
 
         sheet.find("modif_val").value(0)
@@ -125,10 +127,19 @@ const setupStat = function(sheet: PcSheet, stat: Stat) {
     const rollStatCmp = sheet.find(stat + "_label") as Component<string>
 
     rollStatCmp.on("click", function(cmp) {
-        new RollBuilder(sheet.raw())
-            .title(cmp.text())
-            .expression(buildRoll(sheet.stats[stat].curr() + sheet.customRollModifier(), sheet.stress.total(), false))
-            .roll()
+        sheet.raw().prompt("Modificateurs", "ModifyPopin", function(promptInfo) {
+            let modifier = 0
+            if(promptInfo.modify_roll !== undefined) {
+                modifier = promptInfo.modify_roll
+            }
+            new RollBuilder(sheet.raw())
+                .title(cmp.text())
+                .expression(buildRoll(sheet.stats[stat].curr() + modifier, sheet.stress.total(), false))
+                .onRoll(stressSuccessHandler(sheet))
+                .addAction("Forcer", forceRollHandler(sheet, cmp.text()))
+                .roll()
+        }, function() {})
+
 
         sheet.find("modif_val").value(0)
     })
@@ -137,6 +148,18 @@ const setupStat = function(sheet: PcSheet, stat: Stat) {
 export const setupEncombrement = function(sheet: PcSheet) {
     effect(function() {
         sheet.find("enc_txt").value(sheet.encombrement() + " / " + sheet.max_encombrement())
+        if(sheet.max_encombrement() < sheet.encombrement() && 4 * sheet.max_encombrement() >= sheet.encombrement()) {
+            sheet.find("enc_txt").addClass("text-danger")
+        } else {
+            sheet.find("enc_txt").removeClass("text-danger")
+        }
+        if(4 * sheet.max_encombrement() < sheet.encombrement()) {
+            sheet.find("enc_container").addClass("bg-danger")
+            sheet.find("enc_container").removeClass("highlight-1")
+        } else {
+            sheet.find("enc_container").removeClass("bg-danger")
+            sheet.find("enc_container").addClass("highlight-1")
+        }
     }, [sheet.encombrement, sheet.max_encombrement])
 }
 

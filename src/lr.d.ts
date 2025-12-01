@@ -7,6 +7,7 @@ declare global {
         title: (s: string) => RollBuilder
         roll: () => void
         onRoll: (callback: (res: DiceResult) => void) => RollBuilder
+        addAction: (title: string, callback: (res: DiceResult) => void) => RollBuilder
     }
     
     class Dice {
@@ -84,11 +85,12 @@ declare global {
     }
     
     type DiceResult = {
-        tags: string[]
-        allTags: string[]
-        all: DiceResult[]
-        containsTag(tag: string): boolean
-        success: number
+        tags: string[],
+        allTags: Array[],
+        all: DiceResult[],
+        containsTag(tag: string): boolean,
+        success: number,
+        failure: number,
         value: number
         title: string
         expression: string,
