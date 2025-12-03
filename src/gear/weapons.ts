@@ -128,9 +128,11 @@ export const onWeaponDisplay = function(entry: Component<Weapon>) {
 
     entry.find("weapon_label").on("click", function() {
         let skill = (sheet.find("cac_val") as Component<number>).value() + (sheet.find("vig_val") as Component<number>).value()
+        let statName: Stat = "vig"
 
         if(curr_weapon.weapon_type_val !== "cac") {
             skill = (sheet.find("tir_val") as Component<number>).value() + (sheet.find("agi_val") as Component<number>).value()
+            statName = "agi"
         }
         sheet.raw().prompt("Modificateurs", "ModifyPopin", function(promptInfo) {
             const roll_expression = buildRoll(
@@ -143,7 +145,7 @@ export const onWeaponDisplay = function(entry: Component<Weapon>) {
                 .title(curr_weapon.weapon_name_val)
                 .expression(roll_expression)
                 .onRoll(stressSuccessHandler(sheet))
-                .addAction("Forcer", forceRollHandler(sheet, curr_weapon.weapon_name_val, 0, true))
+                .addAction("Forcer", forceRollHandler(sheet, curr_weapon.weapon_name_val, statName, 0, true))
                 .visibility(sheet.find("roll_visibility").value())
                 .roll()
         }, initModifyPrompt(sheet))

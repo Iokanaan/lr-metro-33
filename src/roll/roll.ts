@@ -147,7 +147,7 @@ export const stressSuccessHandler = function(sheet: PcSheet) {
     }
 }
 
-export const forceRollHandler = function(sheet: PcSheet, title: string, extraStress: number, repeatable: boolean) {
+export const forceRollHandler = function(sheet: PcSheet, title: string, stat: Stat, extraStress: number, repeatable: boolean) {
     return function(result: DiceResult) {
         let stressSuccess = 0
         let nbSuccess = 0
@@ -169,13 +169,48 @@ export const forceRollHandler = function(sheet: PcSheet, title: string, extraStr
             .onRoll(stressSuccessHandler(sheet))
             .visibility(sheet.find("roll_visibility").value())
         if(repeatable) {
-            rb = rb.addAction("Forcer (+1 stress)", stressForceRollHandler(sheet, title))
+            rb = rb.addAction("Forcer (+1 stress)", stressForceRollHandler(sheet, title, stat))
+            const talents = Object.values(sheet.talents())
+            for(let i=0;i<talents.length; i++) {
+                if(talents[i].talent_title_val === "compassion" && stat === "empathie") {
+                    if(talents[i].talent_superieur === true) {
+                        rb = rb.addAction("Compassion", forceRollHandler(sheet, title, stat, 0, false))
+                    } else {
+                        rb = rb.addAction("Compassion", talentLvl1ForceRollHandler(sheet, title, stat))
+                    }
+                    break
+                }
+                if(talents[i].talent_title_val === "temeraire" && stat === "agi") {
+                    if(talents[i].talent_superieur === true) {
+                        rb = rb.addAction("Téméraire", forceRollHandler(sheet, title, stat, 0, false))
+                    } else {
+                        rb = rb.addAction("Téméraire", talentLvl1ForceRollHandler(sheet, title, stat))
+                    }
+                    break
+                }
+                if(talents[i].talent_title_val === "tenace" && stat === "vig") {
+                    if(talents[i].talent_superieur === true) {
+                        rb = rb.addAction("Tenace", forceRollHandler(sheet, title, stat, 0, false))
+                    } else {
+                        rb = rb.addAction("Tenace", talentLvl1ForceRollHandler(sheet, title, stat))
+                    }
+                    break
+                }
+                if(talents[i].talent_title_val === "inquisiteur" && stat === "esprit") {
+                    if(talents[i].talent_superieur === true) {
+                        rb = rb.addAction("Inquisiteur", forceRollHandler(sheet, title, stat, 0, false))
+                    } else {
+                        rb = rb.addAction("Inquisiteur", talentLvl1ForceRollHandler(sheet, title, stat))
+                    }
+                    break
+                }
+            }
         }
         rb.roll()
     }
 }
 
-export const stressForceRollHandler = function(sheet: PcSheet, title: string) {
+export const stressForceRollHandler = function(sheet: PcSheet, title: string, stat: Stat) {
     return function(result: DiceResult) {
         for(let i=1; i<=5; i++) {
             if(sheet.find("stress_" + i).value() === false) {
@@ -183,7 +218,14 @@ export const stressForceRollHandler = function(sheet: PcSheet, title: string) {
                 break
             }
         }
-        forceRollHandler(sheet, title, 1, false)(result)
+        forceRollHandler(sheet, title, stat, 1, false)(result)
+    }
+}
+
+const talentLvl1ForceRollHandler = function(sheet: PcSheet, title: string, stat: Stat) {
+    return function(result: DiceResult) {
+        // TODO
+        forceRollHandler(sheet, title, stat, 0, false)(result)
     }
 }
 
@@ -256,13 +298,12 @@ export const initModifySkillPrompt = function(sheet: PcSheet, skill: Skill) {
             }
 
         };
+        (promptView.get("modify_stat") as ChoiceComponent<Record<string, string>>).setChoices(options)
         if(Object.keys(options).length === 1) {
             promptView.get("modify_stat").hide()
-        } else {
-            (promptView.get("modify_stat") as ChoiceComponent<Record<string, string>>).setChoices(options)
-            promptView.get("modify_stat").show()
-            promptView.get("modify_stat").value(Object.keys(options)[0])
-        }
+        };
+        promptView.get("modify_stat").show()
+        promptView.get("modify_stat").value(Object.keys(options)[0])
         initModifyPrompt(sheet)(promptView)
     }
 }
