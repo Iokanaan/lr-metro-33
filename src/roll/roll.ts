@@ -1,3 +1,4 @@
+import { skillStatMap, statNames } from "../globals"
 
 
 export const buildRoll = function(val: number, stress: number, autoSuccess: number, forced: boolean): string {
@@ -234,15 +235,37 @@ export const protectionCallback = function(result: DiceResult): (sheet: Sheet) =
     }
 }
 
-export const initModifySkillPrompt = function(sheet: PcSheet, skill: string) {
+export const initModifySkillPrompt = function(sheet: PcSheet, skill: Skill) {
     return function(promptView: Sheet) {
         const talents = Object.values(sheet.talents())
-        let options = {}
+        const defaultStat = skillStatMap[skill]
+        let options: Record<string, string> = {}
+        options[defaultStat] = statNames[defaultStat];
         for(let i=0;i<talents.length; i++) {
             if(talents[i].talent_title_val === "sens_danger" && skill === "obs") {
-                options = { "empathie": "Empathie", "esprit": "Esprit" }
+                options["empathie"] = statNames["empathie"]
                 break
             }
+            if(talents[i].talent_title_val === "esquive" && skill === "cac") {
+                options["agi"] = statNames["agi"]
+                break
+            }
+            if(talents[i].talent_title_val === "menacant" && skill === "mani") {
+                options["vig"] = statNames["vig"]
+                break
+            }
+            if(talents[i].talent_title_val === "psycho" && skill === "mani") {
+                options["esprit"] = statNames["esprit"]
+                break
+            }
+
+        };
+        if(Object.keys(options).length === 1) {
+            promptView.get("modify_stat").hide()
+        } else {
+            (promptView.get("modify_stat") as ChoiceComponent<Record<string, string>>).setChoices(options)
+            promptView.get("modify_stat").show()
+            promptView.get("modify_stat").value(Object.keys(options)[0])
         }
         initModifyPrompt(sheet)(promptView)
     }
@@ -257,5 +280,29 @@ export const initModifyPrompt = function(sheet: PcSheet) {
         promptView.get("modify_plus").on("click", function() {
             promptView.get("modify_roll").value(promptView.get("modify_roll").value() + 1)
         })
+    }
+}
+
+export const consoCallback = function(result: DiceResult): (sheet: Sheet) => void {
+    return function (sheet: Sheet) {
+        let nbFailures = 0
+        for(let i=0; i<result.all.length; i++) {
+            log("Die " + i + " value: " + result.all[i].value)
+            if(result.all[i].value === 1) {
+                nbFailures++
+            }
+        }
+        if(nbFailures > 0) {
+            sheet.get("nb_failures").value("-" + nbFailures)
+            sheet.get("nb_failures").removeClass("text-success")
+        }
+        const consoKeys = ["eau", "nourriture", "energie", "filtre"]
+        for(let i=0;i<consoKeys.length;i++) {
+            if(result.allTags.includes(consoKeys[i])) {
+                sheet.get(consoKeys[i] + "_icon").show()
+            } else {
+                sheet.get(consoKeys[i] + "_icon").hide()
+            }
+        }
     }
 }

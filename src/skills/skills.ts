@@ -30,13 +30,11 @@ export const setupStats = function(sheet: PcSheet) {
 
 const setupSkill = function(sheet: PcSheet, skill: Skill) {
     const skillCmp = sheet.find(skill + "_label") as Component<number>
-    const skillStat = skillStatMap[skill]
-
     skillCmp.on("click", function() {
         sheet.raw().prompt("Modificateurs", "ModifyPopin", function(promptInfo) {
             new RollBuilder(sheet.raw())
                 .title(skillCmp.text())
-                .expression(buildRoll(sheet.stats[skillStat].curr() + sheet.skills[skill]() + promptInfo.modify_roll, sheet.stress.total(), 0, false))
+                .expression(buildRoll(sheet.stats[promptInfo.modify_stat as Stat].curr() + sheet.skills[skill]() + promptInfo.modify_roll, sheet.stress.total(), 0, false))
                 .onRoll(stressSuccessHandler(sheet))
                 .addAction("Forcer", forceRollHandler(sheet, skillCmp.text(), 0, true))
                 .visibility(sheet.find("roll_visibility").value())
@@ -175,5 +173,49 @@ export const setupProtectionRoll = function(sheet: PcSheet) {
                 .visibility(sheet.find("roll_visibility").value())
                 .roll()
         }, initModifyPrompt(sheet))
+    })
+}
+
+export const setupSangFroid = function(sheet: PcSheet) {
+    effect(function() {
+        for(let i=6; i<=7; i++) {
+            if(sheet.sangfroid.max() < i) {
+                sheet.find("sangfroid_" + i).hide()
+                if(sheet.find("sangfroid_" + i).value() === true) {
+                    sheet.find("sangfroid_" + i).value(false)
+                }
+            } else {
+                sheet.find("sangfroid_" + i).show()
+            }
+        }
+    }, [sheet.sangfroid.max])
+}
+
+export const setupConso = function(sheet: PcSheet) {
+    const consoKeys = Object.keys(sheet.consommables) as Consommable[]
+    for(let i=0;i<consoKeys.length;i++) {
+        consoRoll(sheet, consoKeys[i])
+    }
+}
+
+const consoRoll = function(sheet: PcSheet, key: Consommable) {
+    const consoCmp = sheet.find("conso_" +key + "_label") as Component<string>
+    consoCmp.on("click", function(cmp) {
+        if(sheet.consommables[key]() > 0) {
+            new RollBuilder(sheet.raw())
+                .title(cmp.text())
+                .expression(Math.min(sheet.consommables[key](), 5) + "d6[conso," + key + "]")
+                .visibility(sheet.find("roll_visibility").value())
+                .onRoll(function(result) {
+                    let nbConso = 0;
+                    for(let i=0;i<result.all.length;i++) {
+                        if(result.all[i].value === 1) {
+                            nbConso += 1
+                        }
+                    }
+                    sheet.find("conso_" + key + "_val").value(Math.max(sheet.find("conso_" + key + "_val").value() as number - nbConso, 0))
+                })
+                .roll()
+        }
     })
 }

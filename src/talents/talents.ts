@@ -35,9 +35,11 @@ export const onTalentEdit = function(sheet: PcSheet) {
                 entry.find("talent_superieur_col").show()
             } else {
                 entry.find("talent_superieur_col").hide()
-                entry.find("talent_superieur").value(false)
+                if(entry.find("talent_superieur").value() === true) {
+                    entry.find("talent_superieur").value(false)
+                }
             }
-            let customLabel = "--------"
+            let customLabel = "........"
             if(customization() !== undefined && customization() !== "") {
                 customLabel = customization()
             }

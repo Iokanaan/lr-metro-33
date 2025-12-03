@@ -72,6 +72,8 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     }
 
 
+
+
     const tempRadDetail = [] as Signal<boolean>[]
     const perm_rad_cmp = _sheet.find("rad_perm_val") as Component<number>
     if(perm_rad_cmp.value() === undefined) {
@@ -106,7 +108,7 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
 
 
     const conso_eau_cmp = _sheet.find("conso_eau_val") as Component<number>
-    const conso_nourr_cmp = _sheet.find("conso_nourr_val") as Component<number>
+    const conso_nourr_cmp = _sheet.find("conso_nourriture_val") as Component<number>
     const conso_energie_cmp = _sheet.find("conso_energie_val") as Component<number>
     const conso_filtre_cmp = _sheet.find("conso_filtre_val") as Component<number>
     if(conso_eau_cmp.value() === undefined) {
@@ -217,11 +219,9 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     _sheet.max_encombrement = computed(function() {
         const talents = Object.values(_sheet.talents())
         let maxEnc = _sheet.stats.vig.max() * 2
-        log("max enc before " + maxEnc)
         for(let i=0; i<talents.length; i++) {
             talents[i]
             if(talents[i].talent_title_val === "bete_somme") {
-                log("Bête de somme found")
                 maxEnc = maxEnc * 2
                 break
             }
@@ -246,5 +246,40 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     }, [
         _sheet.protections
     ])
+
+    // sangfroid
+    const sangfroidDetail = [] as Signal<boolean>[]
+
+    for(let i=1;i<=5;i++) {
+        const sangfroid_cmp = _sheet.find("sangfroid_" + i) as Component<boolean>
+        const sig = signal(sangfroid_cmp.value())
+        sangfroidDetail.push(sig)
+        sangfroid_cmp.on("update", updateHandler(sig))
+    }
+    _sheet.sangfroid = {
+        "detail": sangfroidDetail,
+        "curr": computed(function() {
+            let total = 0
+            for(let i=0; i<sangfroidDetail.length;i++) {
+                total += sangfroidDetail[i]() ? 1 : 0
+            }
+            return total
+        }, sangfroidDetail),
+        "max": computed(function() {
+            let max = 5
+            const talents = Object.values(_sheet.talents())
+            for(let i=0; i<talents.length; i++) {
+                if(talents[i].talent_title_val === "maitrise_soi") {
+                    max++
+                    if(talents[i].talent_superieur === true) {
+                        max++
+                    }
+                    break
+                }
+            }
+            return max
+        }, [_sheet.talents])
+    }
+
     return _sheet
 }

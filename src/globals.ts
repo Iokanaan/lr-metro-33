@@ -10,10 +10,17 @@ export const skillStatMap: Record<Skill, Stat> = {
     "brico": "vig",
     "cac": "vig",
     "endu": "vig",
-    "ana": "esprit",
-    "mani": "esprit",
-    "soin": "esprit",
-    "com": "empathie",
-    "obs": "empathie",
-    "survie": "empathie"
+    "ana": "empathie",
+    "mani": "empathie",
+    "soin": "empathie",
+    "com": "esprit",
+    "obs": "esprit",
+    "survie": "esprit"
+}
+
+export const statNames: Record<string, string> = {
+    "agi": "Agilité",
+    "vig": "Vigueur",
+    "empathie": "Empathie",
+    "esprit": "Esprit"
 }

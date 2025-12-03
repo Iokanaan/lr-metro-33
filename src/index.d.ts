@@ -88,7 +88,7 @@ declare global {
         stats: Record<Stat, { "max": Signal<number>, "curr": Signal<number> }>,
         skills: Record<Skill, Signal<number>>,
         stress: { "detail": Signal<boolean>[], "total": Computed<number> },
-        sangfroid: { "max": Signal<number>, "detail": Signal<boolean>[], "curr": Signal<number> },
+        sangfroid: { "max": Computed<number>, "detail": Signal<boolean>[], "curr": Computed<number> },
         radiation: { "temp": { "detail": Signal<boolean>[], "total": Computed<number> }, "perm": Signal<number> },
         editMode: Signal<boolean>,
         protection_total: Computed<number>,
@@ -98,8 +98,7 @@ declare global {
         weapons: Signal<Record<string, Weapon>>,
         protections: Signal<Record<string, Protection>>,
         consommables: Record<Consommable, Signal<number>>,
-        talents: Signal<Record<string, Talend>>
-
+        talents: Signal<Record<string, Talent>>
     } & ExtendedSheet
 }
 
