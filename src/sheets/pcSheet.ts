@@ -4,7 +4,6 @@ import { computed, signal, weightConverter } from "../utils/utils"
 
 const updateHandler = function<T>(signal: Signal<T>) {
     return function(c: Component<T>) {
-        log("Update " + c.value())
         signal.set(c.value())
     }
 }

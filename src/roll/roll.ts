@@ -8,7 +8,7 @@ export const buildRoll = function(val: number, stress: number, autoSuccess: numb
     } else {
         expression = "((" + val + "d6 = 6) + " + autoSuccess + ")[roll] + " + stress + "d6[stress]"
     }
-    log("Roll " + expression)
+    log("[INFO] " + expression)
     return expression
 }
 
@@ -21,7 +21,6 @@ export const standardCallback = function(result: DiceResult, forced: boolean): (
         let nbSuccess = 0
         let nbFailures = 0
         let nbStressSuccess = 0
-        log(standardDice)
         for(let i=0; i<standardDice.length; i++) {
             if(standardDice[i].value === 1 && forced === true) {
                 nbFailures++
@@ -179,9 +178,7 @@ export const forceRollHandler = function(sheet: PcSheet, title: string, extraStr
 export const stressForceRollHandler = function(sheet: PcSheet, title: string) {
     return function(result: DiceResult) {
         for(let i=1; i<=5; i++) {
-            log("loop stress " + sheet.find("stress_" + 1).value())
             if(sheet.find("stress_" + i).value() === false) {
-                log("add stress")
                 sheet.find("stress_" + i).value(true)
                 break
             }
@@ -222,7 +219,6 @@ export const protectionCallback = function(result: DiceResult): (sheet: Sheet) =
         let nbSuccess = 0
         let nbBroken = 0
         for(let i=0; i<result.all.length; i++) {
-            log("Die " + i + " value: " + result.all[i].value)
             if(result.all[i].value === 6) {
                 nbSuccess++
             }
@@ -287,7 +283,6 @@ export const consoCallback = function(result: DiceResult): (sheet: Sheet) => voi
     return function (sheet: Sheet) {
         let nbFailures = 0
         for(let i=0; i<result.all.length; i++) {
-            log("Die " + i + " value: " + result.all[i].value)
             if(result.all[i].value === 1) {
                 nbFailures++
             }

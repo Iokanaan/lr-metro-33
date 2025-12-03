@@ -20,7 +20,6 @@ export const onTalentEdit = function(sheet: PcSheet) {
         const customization = signal(entry.find("customization").value())
         entry.find("customization").on("update", basicUpdateHandler(customization))
         effect(function() {
-            log("Update customization " + talentChoice().customizable)
             if((Tables.get("talents") as Table<TalentEntity>).get(talentChoice()).customizable === "1") {
                 entry.find("customization").value("")
                 entry.find("customization").show()
