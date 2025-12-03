@@ -1,4 +1,4 @@
-import { buildRoll, forceRollHandler, stressSuccessHandler } from "../roll/roll"
+import { buildRoll, forceRollHandler, initModifyPrompt, initModifySkillPrompt, stressSuccessHandler } from "../roll/roll"
 import { skills, skillStatMap, stats } from "../globals"
 import { effect } from "../utils/utils"
 
@@ -33,15 +33,15 @@ const setupSkill = function(sheet: PcSheet, skill: Skill) {
     const skillStat = skillStatMap[skill]
 
     skillCmp.on("click", function() {
-        new RollBuilder(sheet.raw())
-            .title(skillCmp.text())
-            .expression(buildRoll(sheet.stats[skillStat].curr() + sheet.skills[skill]() + sheet.customRollModifier(), sheet.stress.total(), false))
-            .onRoll(stressSuccessHandler(sheet))
-            .addAction("Forcer", forceRollHandler(sheet, skillCmp.text()))
-            .visibility(sheet.find("roll_visibility").value())
-            .roll()
-
-        sheet.find("modif_val").value(0)
+        sheet.raw().prompt("Modificateurs", "ModifyPopin", function(promptInfo) {
+            new RollBuilder(sheet.raw())
+                .title(skillCmp.text())
+                .expression(buildRoll(sheet.stats[skillStat].curr() + sheet.skills[skill]() + promptInfo.modify_roll, sheet.stress.total(), 0, false))
+                .onRoll(stressSuccessHandler(sheet))
+                .addAction("Forcer", forceRollHandler(sheet, skillCmp.text(), 0, true))
+                .visibility(sheet.find("roll_visibility").value())
+                .roll()
+        }, initModifySkillPrompt(sheet, skill))
     })
 }
 
@@ -129,26 +129,21 @@ const setupStat = function(sheet: PcSheet, stat: Stat) {
 
     rollStatCmp.on("click", function(cmp) {
         sheet.raw().prompt("Modificateurs", "ModifyPopin", function(promptInfo) {
-            let modifier = 0
-            if(promptInfo.modify_roll !== undefined) {
-                modifier = promptInfo.modify_roll
-            }
             new RollBuilder(sheet.raw())
                 .title(cmp.text())
-                .expression(buildRoll(sheet.stats[stat].curr() + modifier, sheet.stress.total(), false))
+                .expression(buildRoll(sheet.stats[stat].curr() + promptInfo.modify_roll, sheet.stress.total(), 0, false))
                 .onRoll(stressSuccessHandler(sheet))
-                .addAction("Forcer", forceRollHandler(sheet, cmp.text()))
+                .addAction("Forcer", forceRollHandler(sheet, cmp.text(), 0, true))
                 .roll()
-        }, function() {})
-
-
-        sheet.find("modif_val").value(0)
+        }, initModifyPrompt(sheet))
     })
 }
 
 export const setupEncombrement = function(sheet: PcSheet) {
     effect(function() {
-        sheet.find("enc_txt").value(sheet.encombrement() + " / " + sheet.max_encombrement())
+        if(sheet.find("enc_txt").value() !== sheet.encombrement() + " / " + sheet.max_encombrement()) {
+            sheet.find("enc_txt").value(sheet.encombrement() + " / " + sheet.max_encombrement())
+        }
         if(sheet.max_encombrement() < sheet.encombrement() && 4 * sheet.max_encombrement() >= sheet.encombrement()) {
             sheet.find("enc_txt").addClass("text-danger")
         } else {
@@ -172,12 +167,13 @@ export const setupProtection = function(sheet: PcSheet) {
 
 export const setupProtectionRoll = function(sheet: PcSheet) {
     const protCmp = sheet.find("prot_label") as Component<string>
-
-    protCmp.on("click", function(cmp) {
-        new RollBuilder(sheet.raw())
-            .title(cmp.text())
-            .expression("(" + sheet.protection_total() + "d6)[prot]")
-            .visibility(sheet.find("roll_visibility").value())
-            .roll()
+        protCmp.on("click", function(cmp) {
+            sheet.raw().prompt("Modificateurs", "ModifyPopin", function(promptInfo) {
+            new RollBuilder(sheet.raw())
+                .title(cmp.text())
+                .expression("(" + (sheet.protection_total() + promptInfo.modify_roll) + "d6)[prot]")
+                .visibility(sheet.find("roll_visibility").value())
+                .roll()
+        }, initModifyPrompt(sheet))
     })
 }

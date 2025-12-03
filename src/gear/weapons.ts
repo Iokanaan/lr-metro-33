@@ -1,5 +1,5 @@
 import { globalSheets } from "../globals"
-import { buildRoll, forceRollHandler, stressSuccessHandler } from "../roll/roll"
+import { buildRoll, forceRollHandler, initModifyPrompt, stressSuccessHandler } from "../roll/roll"
 import { basicUpdateHandler, effect, signal } from "../utils/utils"
 
 export const onWeaponEdit = function(entry: Component<Weapon>) {
@@ -132,18 +132,21 @@ export const onWeaponDisplay = function(entry: Component<Weapon>) {
         if(curr_weapon.weapon_type_val !== "cac") {
             skill = (sheet.find("tir_val") as Component<number>).value() + (sheet.find("agi_val") as Component<number>).value()
         }
-        const roll_expression = buildRoll(
-            skill + curr_weapon.weapon_curr_bonus,
-            sheet.stress.total(),
-            false
-        )
-        new RollBuilder(sheet.raw())
-            .title(curr_weapon.weapon_name_val)
-            .expression(roll_expression)
-            .visibility(sheet.find("roll_visibility").value())
-            .onRoll(stressSuccessHandler(sheet))
-            .addAction("Forcer", forceRollHandler(sheet, curr_weapon.weapon_name_val))
-            .roll()
+        sheet.raw().prompt("Modificateurs", "ModifyPopin", function(promptInfo) {
+            const roll_expression = buildRoll(
+                skill + curr_weapon.weapon_curr_bonus + promptInfo.modify_roll,
+                sheet.stress.total(),
+                0,
+                false
+            )
+            new RollBuilder(sheet.raw())
+                .title(curr_weapon.weapon_name_val)
+                .expression(roll_expression)
+                .onRoll(stressSuccessHandler(sheet))
+                .addAction("Forcer", forceRollHandler(sheet, curr_weapon.weapon_name_val, 0, true))
+                .visibility(sheet.find("roll_visibility").value())
+                .roll()
+        }, initModifyPrompt(sheet))
     })
 }
 

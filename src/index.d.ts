@@ -62,8 +62,19 @@ declare global {
     }
 
     type Talent = {
+        talent_title_val: string,
+        talent_desc: string,
+        talent_superieur: boolean
+    }
+
+    type TalentEntity = {
+        id: string,
         name: string,
-        level: number
+        description: string
+        upgradable: string
+        customizable: string
+        description_alt: string
+        archetype: string
     }
 
     type RollData = {
@@ -79,7 +90,6 @@ declare global {
         stress: { "detail": Signal<boolean>[], "total": Computed<number> },
         sangfroid: { "max": Signal<number>, "detail": Signal<boolean>[], "curr": Signal<number> },
         radiation: { "temp": { "detail": Signal<boolean>[], "total": Computed<number> }, "perm": Signal<number> },
-        customRollModifier: Signal<number>
         editMode: Signal<boolean>,
         protection_total: Computed<number>,
         encombrement: Computed<number>

@@ -8,6 +8,7 @@ import { onProtectionDelete, onProtectionDisplay, onProtectionEdit } from "./gea
 import { onItemDelete, onItemDisplay, onItemEdit } from "./gear/item"
 import { onWeaponDelete, onWeaponDisplay, onWeaponEdit } from "./gear/weapons"
 import { buildRoll, protectionCallback, radiationCallback, standardCallback } from "./roll/roll"
+import { onTalentDelete, onTalentDisplay, onTalentEdit } from "./talents/talents"
 
 init = function(sheet: Sheet) {
     if(sheet.id() === "main") {
@@ -18,16 +19,12 @@ init = function(sheet: Sheet) {
         } catch(e) {
             log("[CRITICAL]: Failed setting up navigation for " + sheet.getSheetId())
         }
-        try {
             s.find("char_name").value(sheet.properName())
             setupStats(s)
             setupBaseInfo(s)
             setupRadiation(s)
             setupProtection(s)
             setupEncombrement(s)
-        } catch(e) {
-            log("[ERROR]: Failed setting stats / AR for " + sheet.getSheetId())
-        }
         try {
             setupRepeater(s, "protections", onProtectionEdit, onProtectionDisplay, onProtectionDelete(s))
         } catch(e) {
@@ -40,6 +37,11 @@ init = function(sheet: Sheet) {
         }
         try {
             setupRepeater(s, "weapons", onWeaponEdit, onWeaponDisplay, onWeaponDelete(s))
+        } catch(e) {
+            log("[ERROR]: Failed setting up weapons repeater for " + sheet.getSheetId())
+        }
+        try {
+            setupRepeater(s, "talents", onTalentEdit(s), onTalentDisplay, onTalentDelete(s))
         } catch(e) {
             log("[ERROR]: Failed setting up weapons repeater for " + sheet.getSheetId())
         }

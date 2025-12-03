@@ -215,9 +215,21 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
         _sheet.protections
     ])
     _sheet.max_encombrement = computed(function() {
-        return _sheet.stats.vig.max() * 2
+        const talents = Object.values(_sheet.talents())
+        let maxEnc = _sheet.stats.vig.max() * 2
+        log("max enc before " + maxEnc)
+        for(let i=0; i<talents.length; i++) {
+            talents[i]
+            if(talents[i].talent_title_val === "bete_somme") {
+                log("Bête de somme found")
+                maxEnc = maxEnc * 2
+                break
+            }
+        }
+        return maxEnc
     }, [
-        _sheet.stats.vig.max
+        _sheet.stats.vig.max,
+        _sheet.talents
     ])
 
     // protection
@@ -234,11 +246,5 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     }, [
         _sheet.protections
     ])
-
-    // custom roll modifier
-    const customRollModifier_cmp = _sheet.find("modif_val") as Component<number>
-    _sheet.customRollModifier = signal(customRollModifier_cmp.value())
-    customRollModifier_cmp.on("update", updateHandler(_sheet.customRollModifier))
-
     return _sheet
 }

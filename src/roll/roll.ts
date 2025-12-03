@@ -1,11 +1,11 @@
 
 
-export const buildRoll = function(val: number, stress: number, forced: boolean): string {
+export const buildRoll = function(val: number, stress: number, autoSuccess: number, forced: boolean): string {
     let expression = ""
     if(forced) {
-        expression = val + "d6[roll,forced] + " + stress + "d6[stress]"
+        expression = "((" + val + "d6 = 6) + " + autoSuccess + ")[roll,forced] + " + stress + "d6[stress]"
     } else {
-        expression = val + "d6[roll] + " + stress + "d6[stress]"
+        expression = "((" + val + "d6 = 6) + " + autoSuccess + ")[roll] + " + stress + "d6[stress]"
     }
     log("Roll " + expression)
     return expression
@@ -20,10 +20,9 @@ export const standardCallback = function(result: DiceResult, forced: boolean): (
         let nbSuccess = 0
         let nbFailures = 0
         let nbStressSuccess = 0
+        log(standardDice)
         for(let i=0; i<standardDice.length; i++) {
-            if(standardDice[i].value === 6) {
-                nbSuccess++
-            } else if (standardDice[i].value === 1 && forced === true) {
+            if(standardDice[i].value === 1 && forced === true) {
                 nbFailures++
             }
         }
@@ -35,8 +34,8 @@ export const standardCallback = function(result: DiceResult, forced: boolean): (
                 nbFailures++
             }
         }
-        rollSheet.get("nb_success").value(nbSuccess + " succès")
-        if(nbSuccess > 0) {
+        rollSheet.get("nb_success").value(result.children[0].total + " succès")
+        if(result.children[0].total > 0) {
             rollSheet.get("nb_success").addClass("bg-success")
         } else {
             rollSheet.get("nb_success").addClass("bg-danger")
@@ -70,31 +69,33 @@ export const standardCallback = function(result: DiceResult, forced: boolean): (
 
 const groupDice = function(result: DiceResult, groupSize: number) {
     const diceMatrix: Record<string, RollData> = {}
-    const nbLines = Math.ceil(result.all.length / groupSize);
+
     const standardDice = result.children[0].all
     const stressDice = result.children[1].all
+    const nbAutoSuccess = result.children[0].children[0].children[1].total
+    const rollsWithAuto = Array(nbAutoSuccess).fill({ "value": 6 }).concat(result.all)
+    const nbLines = Math.ceil(rollsWithAuto.length / groupSize);
     const rollRange = {
         "min": 0,
-        "max" : standardDice.length
+        "max" : standardDice.length + nbAutoSuccess
     }
     const stressRange = {
-        "min": standardDice.length,
-        "max" : standardDice.length + stressDice.length
+        "min": standardDice.length + nbAutoSuccess,
+        "max" : standardDice.length + nbAutoSuccess + stressDice.length
     }
     for(let i=0; i<nbLines; i++) {
         diceMatrix["l" + i] = {
             "diceResult": [],
             "diceTag": []
         }
-        for(let j=i*groupSize; j<result.all.length && j < (i+1)*groupSize; j++) {
+        for(let j=i*groupSize; j<rollsWithAuto.length && j < (i+1)*groupSize; j++) {
             if(j >= rollRange.min && j< rollRange.max) {
                 diceMatrix["l" + i].diceTag.push("roll")
             }
             if(j >= stressRange.min && j< stressRange.max) {
                 diceMatrix["l" + i].diceTag.push("stress")
             }
-            result.all[j].tags
-            diceMatrix["l" + i].diceResult.push(result.all[j])
+            diceMatrix["l" + i].diceResult.push(rollsWithAuto[j])
         }
     }
     return diceMatrix
@@ -146,22 +147,45 @@ export const stressSuccessHandler = function(sheet: PcSheet) {
     }
 }
 
-export const forceRollHandler = function(sheet: PcSheet, title: string) {
+export const forceRollHandler = function(sheet: PcSheet, title: string, extraStress: number, repeatable: boolean) {
     return function(result: DiceResult) {
         let stressSuccess = 0
+        let nbSuccess = 0
         const standardDice = result.children[0].all
         const stressDice = result.children[1].all
+        for(let i=0; i<standardDice.length; i++) {
+            if(standardDice[i].value === 6) {
+                nbSuccess++
+            }
+        }
         for(let i=0; i<stressDice.length; i++) {
             if(stressDice[i].value === 6) {
                 stressSuccess++
             }
         }
-        new RollBuilder(sheet.raw())
+        let rb = new RollBuilder(sheet.raw())
             .title(title + " - Forcé")
-            .expression(buildRoll(standardDice.length, stressDice.length - stressSuccess, true))
+            .expression(buildRoll(standardDice.length - nbSuccess, stressDice.length - stressSuccess + extraStress, nbSuccess, true))
             .onRoll(stressSuccessHandler(sheet))
             .visibility(sheet.find("roll_visibility").value())
-            .roll()
+        if(repeatable) {
+            rb = rb.addAction("Forcer (+1 stress)", stressForceRollHandler(sheet, title))
+        }
+        rb.roll()
+    }
+}
+
+export const stressForceRollHandler = function(sheet: PcSheet, title: string) {
+    return function(result: DiceResult) {
+        for(let i=1; i<=5; i++) {
+            log("loop stress " + sheet.find("stress_" + 1).value())
+            if(sheet.find("stress_" + i).value() === false) {
+                log("add stress")
+                sheet.find("stress_" + i).value(true)
+                break
+            }
+        }
+        forceRollHandler(sheet, title, 1, false)(result)
     }
 }
 
@@ -195,19 +219,43 @@ export const radiationCallback = function(result: DiceResult): (sheet: Sheet) =>
 export const protectionCallback = function(result: DiceResult): (sheet: Sheet) => void {
     return function (sheet: Sheet) {
         let nbSuccess = 0
+        let nbBroken = 0
         for(let i=0; i<result.all.length; i++) {
             log("Die " + i + " value: " + result.all[i].value)
             if(result.all[i].value === 6) {
                 nbSuccess++
             }
+            if(result.all[i].value === 1) {
+                nbBroken++
+            }
         }
+        sheet.get("nb_broken").value(nbBroken)
         sheet.get("nb_success").value(nbSuccess)
-        if(nbSuccess >= 1) {
-            sheet.get("success").show()
-            sheet.get("failure").hide()
-        } else {
-            sheet.get("success").hide()
-            sheet.get("failure").show()
+    }
+}
+
+export const initModifySkillPrompt = function(sheet: PcSheet, skill: string) {
+    return function(promptView: Sheet) {
+        const talents = Object.values(sheet.talents())
+        let options = {}
+        for(let i=0;i<talents.length; i++) {
+            if(talents[i].talent_title_val === "sens_danger" && skill === "obs") {
+                options = { "empathie": "Empathie", "esprit": "Esprit" }
+                break
+            }
         }
+        initModifyPrompt(sheet)(promptView)
+    }
+}
+
+export const initModifyPrompt = function(sheet: PcSheet) {
+    return function(promptView: Sheet) {
+        promptView.get("modify_roll").value(0)
+        promptView.get("modify_min").on("click", function() {
+            promptView.get("modify_roll").value(promptView.get("modify_roll").value() - 1)
+        })
+        promptView.get("modify_plus").on("click", function() {
+            promptView.get("modify_roll").value(promptView.get("modify_roll").value() + 1)
+        })
     }
 }
