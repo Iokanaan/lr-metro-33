@@ -138,7 +138,7 @@ export const onWeaponDisplay = function(entry: Component<Weapon>) {
             const roll_expression = buildRoll(
                 skill + curr_weapon.weapon_curr_bonus + promptInfo.modify_roll,
                 sheet.stress.total(),
-                0,
+                0, 0, 0,
                 false
             )
             new RollBuilder(sheet.raw())

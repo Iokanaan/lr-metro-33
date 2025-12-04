@@ -34,7 +34,7 @@ const setupSkill = function(sheet: PcSheet, skill: Skill) {
         sheet.raw().prompt("Modificateurs", "ModifyPopin", function(promptInfo) {
             new RollBuilder(sheet.raw())
                 .title(skillCmp.text())
-                .expression(buildRoll(sheet.stats[promptInfo.modify_stat as Stat].curr() + sheet.skills[skill]() + promptInfo.modify_roll, sheet.stress.total(), 0, false))
+                .expression(buildRoll(sheet.stats[promptInfo.modify_stat as Stat].curr() + sheet.skills[skill]() + promptInfo.modify_roll, sheet.stress.total(), 0, 0, 0, false))
                 .onRoll(stressSuccessHandler(sheet))
                 .addAction("Forcer", forceRollHandler(sheet, skillCmp.text(), promptInfo.modify_stat, 0, true))
                 .visibility(sheet.find("roll_visibility").value())
@@ -129,7 +129,7 @@ const setupStat = function(sheet: PcSheet, stat: Stat) {
         sheet.raw().prompt("Modificateurs", "ModifyPopin", function(promptInfo) {
             new RollBuilder(sheet.raw())
                 .title(cmp.text())
-                .expression(buildRoll(sheet.stats[stat].curr() + promptInfo.modify_roll, sheet.stress.total(), 0, false))
+                .expression(buildRoll(sheet.stats[stat].curr() + promptInfo.modify_roll, sheet.stress.total(), 0, 0, 0, false))
                 .onRoll(stressSuccessHandler(sheet))
                 .addAction("Forcer", forceRollHandler(sheet, cmp.text(), stat, 0, true))
                 .roll()

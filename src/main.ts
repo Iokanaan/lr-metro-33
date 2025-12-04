@@ -7,7 +7,7 @@ import { setupRepeater } from "./utils/repeaters"
 import { onProtectionDelete, onProtectionDisplay, onProtectionEdit } from "./gear/protection"
 import { onItemDelete, onItemDisplay, onItemEdit } from "./gear/item"
 import { onWeaponDelete, onWeaponDisplay, onWeaponEdit } from "./gear/weapons"
-import { buildRoll, consoCallback, protectionCallback, radiationCallback, standardCallback } from "./roll/roll"
+import { basicCallback, buildRoll, consoCallback, forcedCallback, protectionCallback, radiationCallback, standardCallback } from "./roll/roll"
 import { onTalentDelete, onTalentDisplay, onTalentEdit } from "./talents/talents"
 
 init = function(sheet: Sheet) {
@@ -40,7 +40,11 @@ initRoll = function (result, callback) {
         callback("RollProtDisplay", protectionCallback(result))
     } else if(result.allTags.includes("conso")) {
         callback("RollConsoDisplay", consoCallback(result))
+    } else if(result.allTags.includes("forced")) {
+        callback("RollForceDisplay", forcedCallback(result))
+    } else if(result.allTags.includes("roll")) {
+        callback("RollDisplay", standardCallback(result))
     } else {
-        callback("RollDisplay", standardCallback(result, result.allTags.includes("forced")))
+        callback("RollBasicDisplay", basicCallback(result))
     }
 };

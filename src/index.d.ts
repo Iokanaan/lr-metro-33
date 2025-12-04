@@ -78,7 +78,7 @@ declare global {
     }
 
     type RollData = {
-        diceResult: DiceResult[]
+        diceResult: number[]
         diceTag: string[]
     }
 
