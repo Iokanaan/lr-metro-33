@@ -7,8 +7,8 @@ import { setupRepeater } from "./utils/repeaters"
 import { onProtectionDelete, onProtectionDisplay, onProtectionEdit } from "./gear/protection"
 import { onItemDelete, onItemDisplay, onItemEdit } from "./gear/item"
 import { onWeaponDelete, onWeaponDisplay, onWeaponEdit } from "./gear/weapons"
-import { basicCallback, buildRoll, consoCallback, forcedCallback, protectionCallback, radiationCallback, standardCallback } from "./roll/roll"
 import { onTalentDelete, onTalentDisplay, onTalentEdit } from "./talents/talents"
+import { basicCallback, consoCallback, forcedCallback, protectionCallback, radiationCallback, standardCallback } from "./roll/callbacks"
 
 init = function(sheet: Sheet) {
     if(sheet.id() === "main") {

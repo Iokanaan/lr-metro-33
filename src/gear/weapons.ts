@@ -1,5 +1,8 @@
 import { globalSheets } from "../globals"
-import { buildRoll, forceRollHandler, initModifyPrompt, stressSuccessHandler } from "../roll/roll"
+import { stressForceRollHandler } from "../roll/actions"
+import { buildRoll } from "../roll/builder"
+import { initModifyPrompt } from "../roll/prompts"
+import { stressSuccessHandler } from "../roll/sheetActions"
 import { basicUpdateHandler, effect, signal } from "../utils/utils"
 
 export const onWeaponEdit = function(entry: Component<Weapon>) {
@@ -145,10 +148,10 @@ export const onWeaponDisplay = function(entry: Component<Weapon>) {
                 .title(curr_weapon.weapon_name_val)
                 .expression(roll_expression)
                 .onRoll(stressSuccessHandler(sheet))
-                .addAction("Forcer", forceRollHandler(sheet, curr_weapon.weapon_name_val, statName, 0, true))
+                .addAction("Forcer", stressForceRollHandler(sheet, curr_weapon.weapon_name_val, statName, 0, true))
                 .visibility(sheet.find("roll_visibility").value())
                 .roll()
-        }, initModifyPrompt(sheet))
+        }, initModifyPrompt())
     })
 }
 

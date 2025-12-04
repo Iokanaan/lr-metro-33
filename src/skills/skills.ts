@@ -1,5 +1,8 @@
-import { buildRoll, forceRollHandler, initModifyPrompt, initModifySkillPrompt, stressSuccessHandler } from "../roll/roll"
 import { skills, skillStatMap, stats } from "../globals"
+import { forceRollHandler } from "../roll/actions"
+import { buildRoll } from "../roll/builder"
+import { initModifyPrompt, initModifySkillPrompt } from "../roll/prompts"
+import { stressSuccessHandler } from "../roll/sheetActions"
 import { effect } from "../utils/utils"
 
 
@@ -133,7 +136,7 @@ const setupStat = function(sheet: PcSheet, stat: Stat) {
                 .onRoll(stressSuccessHandler(sheet))
                 .addAction("Forcer", forceRollHandler(sheet, cmp.text(), stat, 0, true))
                 .roll()
-        }, initModifyPrompt(sheet))
+        }, initModifyPrompt())
     })
 }
 
@@ -172,7 +175,7 @@ export const setupProtectionRoll = function(sheet: PcSheet) {
                 .expression("(" + (sheet.protection_total() + promptInfo.modify_roll) + "d6)[prot]")
                 .visibility(sheet.find("roll_visibility").value())
                 .roll()
-        }, initModifyPrompt(sheet))
+        }, initModifyPrompt())
     })
 }
 
