@@ -134,3 +134,12 @@ export const protectionCallback = function(result: DiceResult): (sheet: Sheet) =
         sheet.get("nb_success").value(nbSuccess)
     }
 }
+
+export const woundCallback = function(result: DiceResult): (sheet: Sheet) => void {
+    return function (sheet: Sheet) {
+        const d66Result = result.all[0].value.toString() + result.all[1].value.toString()
+        const woundEntity = Tables.get("blessures_critiques").get(d66Result)
+        sheet.get("name").value(woundEntity.name)
+        sheet.get("result").value(d66Result)
+    }
+}

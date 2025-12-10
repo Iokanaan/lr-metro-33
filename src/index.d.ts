@@ -82,6 +82,29 @@ declare global {
         diceTag: string[]
     }
 
+    type Wound = {
+        name: string
+        description: string
+        remission: number
+        fatal_modifier: number
+        fatal_frequency: string
+    }
+
+    type Trauma = {
+        name: string
+        description: string
+        remission: number
+    }
+
+    type WoundEntity = {
+        id: string
+        name: string
+        description: string
+        time: string
+        fatal: string
+        periode: string
+    }
+
     type PcSheet = {
         age: Signal<number>,
         archetype: Signal<string>,
@@ -98,7 +121,9 @@ declare global {
         weapons: Signal<Record<string, Weapon>>,
         protections: Signal<Record<string, Protection>>,
         consommables: Record<Consommable, Signal<number>>,
-        talents: Signal<Record<string, Talent>>
+        talents: Signal<Record<string, Talent>>,
+        wounds: Signal<Record<string, Wound>>,
+        traumas: Signal<Record<string, Trauma>>
     } & ExtendedSheet
 }
 

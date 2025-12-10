@@ -3,6 +3,11 @@ import { tabs } from "../globals"
 export const setupNav = function(sheet: PcSheet) {
     for(let i=0; i<tabs.length; i++) {
         log("[INFO] Setup navigation for " + tabs[i] + " : " + sheet.raw().properName())
+        if(tabs[i] === "talent") {
+            sheet.find(tabs[i] + "_tab").show()
+        } else {
+            sheet.find(tabs[i] + "_tab").hide()
+        }
         sheet.find(tabs[i] + "_nav").on("click", function(cmp) {
             for(let j=0; j<tabs.length; j++) {
                 sheet.find(tabs[j] + "_tab").hide()

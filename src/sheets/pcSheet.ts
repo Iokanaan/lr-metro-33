@@ -151,7 +151,7 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
     // protections
     const protections = _sheet.find("protections") as Component<Record<string, Protection>>
     if(protections.value() === undefined) {
-        protections.value()
+        protections.value({})
     }
     _sheet.protections = signal(protections.value())
 
@@ -161,6 +161,20 @@ export const pcSheet = function(sheet: Sheet): PcSheet {
         talents.value({})
     }
     _sheet.talents = signal(talents.value())
+
+    // blessures
+    const wounds = _sheet.find("wounds") as Component<Record<string, Wound>>
+    if(wounds.value() === undefined) {
+        wounds.value({})
+    }
+    _sheet.wounds = signal(wounds.value())
+
+    // blessures
+    const traumas = _sheet.find("traumas") as Component<Record<string, Trauma>>
+    if(traumas.value() === undefined) {
+        traumas.value({})
+    }
+    _sheet.traumas = signal(traumas.value())
 
     // encombrement
     _sheet.encombrement = computed(function() {

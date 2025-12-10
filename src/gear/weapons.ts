@@ -120,6 +120,7 @@ export const onWeaponDisplay = function(entry: Component<Weapon>) {
         entry.find("portee_label").value("Au Contact")
         entry.find("weapon_label").value(":ga_fire-axe: " + curr_weapon.weapon_name_val)
     } else {
+        log(curr_weapon.weapon_portee_val)
         entry.find("portee_label").value(Tables.get("ranges").get(curr_weapon.weapon_portee_val).name)
         entry.find("weapon_label").value(curr_weapon.weapon_name_val)
         entry.find("weapon_label").value(":ga_pistol-gun: " + curr_weapon.weapon_name_val)
@@ -148,7 +149,7 @@ export const onWeaponDisplay = function(entry: Component<Weapon>) {
                 .title(curr_weapon.weapon_name_val)
                 .expression(roll_expression)
                 .onRoll(stressSuccessHandler(sheet))
-                .addAction("Forcer", stressForceRollHandler(sheet, curr_weapon.weapon_name_val, statName, 0, true))
+                .addAction("Forcer", stressForceRollHandler(sheet, curr_weapon.weapon_name_val, statName))
                 .visibility(sheet.find("roll_visibility").value())
                 .roll()
         }, initModifyPrompt())
